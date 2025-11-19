@@ -21,6 +21,7 @@
     "test:cp041": "playwright test tests/invoice/search-invoice.spec.ts --project=chromium",
     "test:dashboard": "playwright test tests/dashboard --project=chromium",
     "test:cp042": "playwright test tests/dashboard/summary-cards.spec.ts --project=chromium",
+    "test:cp044": "playwright test tests/quote/create-quote.spec.ts --project=chromium",
     "show-report": "playwright show-report",
     "codegen": "playwright codegen http://localhost:3000"
   },

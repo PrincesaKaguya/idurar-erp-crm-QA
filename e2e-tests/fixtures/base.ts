@@ -4,6 +4,7 @@ import { CustomerPage } from '../pages/CustomerPage';
 import { DashboardPage } from '../pages/DashboardPage';
 import { TaxesPage } from '../pages/TaxesPage';
 import { InvoicePage } from '../pages/InvoicePage';
+import { QuotePage } from '../pages/QuotePage';
 
 /**
  * Extend Playwright's base test with custom fixtures for Page Objects
@@ -15,6 +16,7 @@ type CustomFixtures = {
   dashboardPage: DashboardPage;
   taxesPage: TaxesPage;
   invoicePage: InvoicePage;
+  quotePage: QuotePage;
 };
 
 /**
@@ -45,6 +47,11 @@ export const test = base.extend<CustomFixtures>({
   invoicePage: async ({ page }, use) => {
     const invoicePage = new InvoicePage(page);
     await use(invoicePage);
+  },
+
+  quotePage: async ({ page }, use) => {
+    const quotePage = new QuotePage(page);
+    await use(quotePage);
   },
 });
 
