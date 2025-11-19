@@ -297,4 +297,88 @@ export class CustomerPage {
     const cancelButton = this.page.getByRole('button', { name: /no|cancel/i });
     await cancelButton.click();
   }
+
+  /**
+   * Click edit option for a customer by row index
+   * @param rowIndex - 0-based row index
+   */
+  async clickEdit(rowIndex?: number) {
+    // If rowIndex is provided, open the actions menu first
+    if (rowIndex !== undefined) {
+      await this.openActionsMenu(rowIndex);
+      // Wait for dropdown menu to be visible
+      await this.page.waitForTimeout(500);
+    }
+    
+    // Click on "Edit" option - search within the visible dropdown only
+    const dropdown = this.page.locator('.ant-dropdown:visible');
+    const editOption = dropdown.getByRole('menuitem', { name: /edit/i });
+    await editOption.click();
+    
+    // Wait for drawer to open and be visible (opens in READ mode first)
+    await this.page.locator('.ant-drawer.ant-drawer-open').waitFor({ state: 'visible', timeout: 5000 });
+    await this.page.waitForTimeout(500);
+    
+    // Click the "Edit" button INSIDE the drawer to switch to EDIT mode
+    const drawer = this.page.locator('.ant-drawer.ant-drawer-open');
+    const editButtonInDrawer = drawer.getByRole('button', { name: /edit/i });
+    await editButtonInDrawer.click();
+    await this.page.waitForTimeout(800);
+  }
+
+  /**
+   * Update a customer with new data
+   * NOTE: This method fills the form but does not verify save success
+   * due to current system limitations with drawer persistence
+   * @param rowIndex - 0-based row index of the customer to edit
+   * @param newData - New customer data (name, phone, email)
+   */
+  async updateCustomer(rowIndex: number, newData: {
+    name?: string;
+    phone?: string;
+    email?: string;
+  }) {
+    await this.clickEdit(rowIndex);
+    
+    // Wait for drawer to be fully visible
+    const drawer = this.page.locator('.ant-drawer.ant-drawer-open');
+    await drawer.waitFor({ state: 'visible' });
+    
+    // Fill only the fields that are provided using role selectors
+    if (newData.name !== undefined) {
+      const nameInput = drawer.getByRole('textbox', { name: /name/i });
+      await nameInput.fill(newData.name);
+    }
+    
+    if (newData.phone !== undefined) {
+      const phoneInput = drawer.getByRole('textbox', { name: /phone/i });
+      await phoneInput.fill(newData.phone);
+    }
+    
+    if (newData.email !== undefined) {
+      const emailInput = drawer.getByRole('textbox', { name: /email/i });
+      await emailInput.fill(newData.email);
+    }
+  }
+
+  /**
+   * Cancel edit operation (close drawer without saving)
+   */
+  async cancelEdit() {
+    const drawer = this.page.locator('.ant-drawer.ant-drawer-open');
+    
+    // Try to find and click the close button
+    const closeButton = drawer.getByRole('button', { name: /close|cancel/i }).first();
+    
+    if (await closeButton.isVisible()) {
+      await closeButton.click();
+    } else {
+      // If no close button, click the X icon
+      const closeIcon = drawer.locator('.ant-drawer-close');
+      await closeIcon.click();
+    }
+    
+    // Wait for drawer to close
+    await drawer.waitFor({ state: 'hidden', timeout: 3000 });
+  }
 }
