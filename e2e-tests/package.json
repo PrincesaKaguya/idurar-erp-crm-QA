@@ -1,0 +1,29 @@
+{
+  "name": "idurar-e2e-tests",
+  "version": "1.0.0",
+  "description": "End-to-End tests for IDURAR ERP/CRM using Playwright",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:customer": "playwright test tests/customer",
+    "test:cp032": "playwright test tests/customer/search-unique-criteria.spec.ts",
+    "show-report": "playwright show-report",
+    "codegen": "playwright codegen http://localhost:3000"
+  },
+  "keywords": [
+    "playwright",
+    "e2e",
+    "testing",
+    "erp",
+    "crm"
+  ],
+  "author": "QA Team",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.48.0",
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.2"
+  }
+}
