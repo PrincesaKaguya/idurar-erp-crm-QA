@@ -17,6 +17,7 @@
     "test:cp037": "playwright test tests/taxes/validate-value-range.spec.ts",
     "test:cp038": "playwright test tests/customer/delete-customer.spec.ts",
     "test:cp039": "playwright test tests/customer/update-customer.spec.ts",
+    "test:cp040": "playwright test tests/invoice/update-invoice.spec.ts",
     "show-report": "playwright show-report",
     "codegen": "playwright codegen http://localhost:3000"
   },

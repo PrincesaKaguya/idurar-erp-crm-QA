@@ -56,10 +56,19 @@ npm run test:headed
 npm run test:ui
 
 # Run specific test suite
-npm run test:customer
+npm run test:customer  # All customer tests
+npm run test:taxes     # All taxes tests
 
 # Run specific test case
-npm run test:cp032
+npm run test:cp032  # Customer search
+npm run test:cp033  # Create tax
+npm run test:cp034  # Edit tax
+npm run test:cp035  # Validate tax name
+npm run test:cp036  # Delete tax
+npm run test:cp037  # Validate tax value
+npm run test:cp038  # Delete customer
+npm run test:cp039  # Update customer
+npm run test:cp040  # Update invoice (skipped)
 
 # Debug mode (step through tests)
 npm run test:debug
@@ -74,11 +83,25 @@ e2e-tests/
 ├── pages/             # Page Object Models
 │   ├── LoginPage.ts
 │   ├── DashboardPage.ts
-│   └── CustomerPage.ts
+│   ├── CustomerPage.ts
+│   ├── TaxesPage.ts
+│   └── InvoicePage.ts
 ├── tests/             # Test specifications
 │   ├── auth.setup.ts  # Authentication setup
-│   └── customer/
-│       └── search-unique-criteria.spec.ts
+│   ├── customer/      # Customer module tests
+│   │   ├── search-unique-criteria.spec.ts (CP032)
+│   │   ├── delete-customer.spec.ts (CP038)
+│   │   ├── update-customer.spec.ts (CP039)
+│   │   └── README-CP039.md
+│   ├── taxes/         # Taxes module tests
+│   │   ├── create-valid-tax.spec.ts (CP033)
+│   │   ├── edit-tax.spec.ts (CP034)
+│   │   ├── validate-required-name.spec.ts (CP035)
+│   │   ├── delete-tax.spec.ts (CP036)
+│   │   └── validate-value-range.spec.ts (CP037)
+│   └── invoice/       # Invoice module tests
+│       ├── update-invoice.spec.ts (CP040 - ⚠️ DISABLED)
+│       └── README-CP040.md
 ├── test-data/         # Test data and auth state (gitignored)
 │   └── auth.json
 ├── playwright.config.ts
@@ -88,19 +111,129 @@ e2e-tests/
 
 ## 🧪 Test Suites
 
-### CP032 - Customer Search with Single Unique Criteria
+### Customer Module
 
+#### CP032 - Customer Search with Single Unique Criteria ✅
 **Objective:** Verify that simple searches by a single field return exact and correct results.
 
-**Test Cases:**
-1. ✅ Should return exactly one result when searching by unique email
-2. ✅ Should return exactly one result when searching by customer name
-3. ✅ Should be case-insensitive when searching by email
-4. ✅ Should clear search results when search field is cleared
-5. ✅ Should handle search for non-existent email gracefully
-6. ✅ Should validate search returns exact match (no partial matches)
-7. ✅ Should maintain search results after page refresh
-8. ✅ Should intercept and validate API call for customer search
+**Test Cases:** 8 tests
+- Search by unique email (exact match)
+- Search by customer name
+- Case-insensitive search
+- Clear search results
+- Handle non-existent email
+- Validate exact match (no partial)
+- Maintain results after refresh
+- API call validation
+
+**Status:** ✅ All tests passing
+
+#### CP038 - Delete Customer ✅
+**Objective:** Verify customer deletion functionality.
+
+**Test Cases:** 5 tests
+- Delete customer successfully
+- Confirm deletion modal
+- Cancel deletion
+- Verify customer removed from list
+- Handle deletion errors
+
+**Status:** ✅ All tests passing
+
+#### CP039 - Update Customer (Simplified) ✅
+**Objective:** Verify customer update UI functionality.
+
+**Test Cases:** 5 tests
+- Open edit form correctly
+- Modify form fields
+- Validate phone format
+- Validate email format
+- Cancel edit without saving
+
+**Status:** ✅ All tests passing (6/6)
+**Note:** Simplified approach - UI validation only, no persistence verification
+
+**Documentation:** [README-CP039.md](tests/customer/README-CP039.md)
+
+### Taxes Module
+
+#### CP033 - Create Valid Tax ✅
+**Objective:** Verify tax creation functionality.
+
+**Test Cases:** Create tax with valid data
+
+**Status:** ✅ Tests passing
+
+#### CP034 - Edit Tax ✅
+**Objective:** Verify tax editing functionality.
+
+**Test Cases:** Edit existing tax record
+
+**Status:** ✅ Tests passing
+
+#### CP035 - Validate Required Name ✅
+**Objective:** Verify name field validation.
+
+**Test Cases:** Validate required field behavior
+
+**Status:** ✅ Tests passing
+
+#### CP036 - Delete Tax ✅
+**Objective:** Verify tax deletion functionality.
+
+**Test Cases:** Delete tax record
+
+**Status:** ✅ Tests passing
+
+#### CP037 - Validate Value Range ✅
+**Objective:** Verify tax value range validation (0-100).
+
+**Test Cases:** Validate min/max boundaries
+
+**Status:** ✅ Tests passing
+
+### Invoice Module
+
+#### CP040 - Update Invoice ⚠️ DISABLED
+**Objective:** Verify invoice update functionality.
+
+**Test Cases:** 6 tests (IMPLEMENTED BUT DISABLED)
+- Load update form with current data
+- Modify editable fields
+- Modify invoice items (add/remove/edit)
+- Validate automatic calculations (subtotal, tax, total)
+- Cancel edit without saving
+- Validate required fields
+
+**Status:** ⚠️ Tests disabled due to technical limitation
+**Issue:** Invoice table uses Ant Design virtualization - rows not accessible to Playwright
+**Solutions Proposed:**
+1. Use API to obtain invoice IDs
+2. Create invoice in setup and edit immediately
+3. Disable virtualization in test mode
+4. Implement programmatic scroll
+
+**Documentation:** [README-CP040.md](tests/invoice/README-CP040.md) - Complete documentation with proposed solutions
+
+**Page Object:** ✅ InvoicePage.ts fully implemented (20+ methods)
+
+---
+
+### Test Summary
+
+| Module   | Test Case | Status | Tests | Notes |
+|----------|-----------|--------|-------|-------|
+| Customer | CP032     | ✅     | 8/8   | Search functionality |
+| Customer | CP038     | ✅     | 5/5   | Delete customer |
+| Customer | CP039     | ✅     | 6/6   | Update customer (simplified) |
+| Taxes    | CP033     | ✅     | -     | Create tax |
+| Taxes    | CP034     | ✅     | -     | Edit tax |
+| Taxes    | CP035     | ✅     | -     | Validate name required |
+| Taxes    | CP036     | ✅     | -     | Delete tax |
+| Taxes    | CP037     | ✅     | -     | Validate value range |
+| Invoice  | CP040     | ⚠️     | 0/6   | Update invoice (disabled) |
+
+**Total:** 19+ passing tests, 6 disabled tests
 
 ## 📝 Writing Tests
 
