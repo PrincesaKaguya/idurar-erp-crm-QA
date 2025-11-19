@@ -13,6 +13,7 @@
     "test:cp033": "playwright test tests/taxes/create-valid-tax.spec.ts",
     "test:cp034": "playwright test tests/taxes/edit-tax.spec.ts",
     "test:cp035": "playwright test tests/taxes/validate-required-name.spec.ts",
+    "test:cp037": "playwright test tests/taxes/validate-value-range.spec.ts",
     "show-report": "playwright show-report",
     "codegen": "playwright codegen http://localhost:3000"
   },
