@@ -154,6 +154,16 @@ export class CustomerPage {
   }
 
   /**
+   * Get customer ID from row (from data-row-key attribute)
+   * @param rowIndex - 0-based row index
+   */
+  async getCustomerId(rowIndex: number): Promise<string> {
+    const row = this.tableRows.nth(rowIndex);
+    const rowKey = await row.getAttribute('data-row-key');
+    return rowKey || '';
+  }
+
+  /**
    * Search for customer by email and verify single result
    * @param email - Email to search for
    */
@@ -259,5 +269,32 @@ export class CustomerPage {
    */
   async clickAddNew() {
     await this.addNewButton.click();
+  }
+
+  /**
+   * Delete a customer by row index
+   * @param rowIndex - 0-based row index
+   */
+  async clickDelete(rowIndex: number) {
+    await this.openActionsMenu(rowIndex);
+    const deleteOption = this.page.getByRole('menuitem', { name: /delete/i });
+    await deleteOption.click();
+  }
+
+  /**
+   * Confirm delete in modal
+   */
+  async confirmDelete() {
+    const confirmButton = this.page.getByRole('button', { name: /ok|yes|confirm/i });
+    await confirmButton.click();
+    await this.waitForTableToLoad();
+  }
+
+  /**
+   * Cancel delete in modal
+   */
+  async cancelDelete() {
+    const cancelButton = this.page.getByRole('button', { name: /no|cancel/i });
+    await cancelButton.click();
   }
 }
