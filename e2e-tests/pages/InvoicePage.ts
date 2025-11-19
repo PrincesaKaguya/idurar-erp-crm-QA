@@ -30,6 +30,11 @@ export class InvoicePage {
   readonly subTotalField: Locator;
   readonly taxTotalField: Locator;
   readonly totalField: Locator;
+  
+  // Search elements
+  readonly searchInput: Locator;
+  readonly searchClearButton: Locator;
+  readonly dataTable: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -56,6 +61,12 @@ export class InvoicePage {
     this.subTotalField = page.locator('input[id*="subTotal"]').first();
     this.taxTotalField = page.locator('input[id*="taxTotal"]').first();
     this.totalField = page.locator('input[id*="total"]').last();
+    
+    // Search elements - basados en SearchItem component de IDURAR
+    // SearchItem es un Ant Design Select con showSearch=true
+    this.searchInput = page.locator('.ant-select-show-search input').first();
+    this.searchClearButton = page.locator('.ant-select-clear').first();
+    this.dataTable = page.locator('.ant-table');
   }
 
   /**
@@ -63,8 +74,9 @@ export class InvoicePage {
    */
   async goto(): Promise<void> {
     await this.page.goto('/invoice');
-    // Esperar a que la tabla sea visible en lugar de networkidle
-    await this.page.locator('.ant-table').waitFor({ state: 'visible', timeout: 15000 });
+    // Esperar a que el contenido esté cargado - usamos selector menos estricto
+    await this.page.waitForLoadState('domcontentloaded');
+    await this.page.waitForTimeout(2000); // Dar tiempo para virtualización
   }
 
   /**
@@ -305,5 +317,96 @@ export class InvoicePage {
   async getItemsCount(): Promise<number> {
     const itemRows = this.page.getByPlaceholder('Item Name');
     return await itemRows.count();
+  }
+
+  /**
+   * SEARCH METHODS - CP041
+   */
+
+  /**
+   * Busca facturas por nombre de cliente
+   * @param clientName - Nombre del cliente a buscar
+   */
+  async searchByClient(clientName: string): Promise<void> {
+    // Asegurar que estamos en la página principal
+    if (!this.page.url().includes('/invoice') || this.page.url().includes('/update')) {
+      await this.goto();
+    }
+
+    // Hacer click en el input de búsqueda para enfocarlo
+    await this.searchInput.click();
+    
+    // Escribir el nombre del cliente
+    await this.searchInput.fill(clientName);
+    
+    // Esperar a que cargue el autocompletado
+    await this.page.waitForTimeout(500);
+    
+    // Presionar Enter o seleccionar de la lista si aparece
+    const dropdownOption = this.page.locator('.ant-select-item-option').filter({ hasText: clientName }).first();
+    
+    if (await dropdownOption.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await dropdownOption.click();
+    } else {
+      // Si no hay dropdown, presionar Enter
+      await this.searchInput.press('Enter');
+    }
+    
+    // Esperar a que la tabla se actualice
+    await this.page.waitForTimeout(1000);
+  }
+
+  /**
+   * Limpia la búsqueda actual
+   */
+  async clearSearch(): Promise<void> {
+    // Si el botón de limpiar está visible, hacer click
+    if (await this.searchClearButton.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await this.searchClearButton.click();
+      await this.page.waitForTimeout(500);
+    } else {
+      // Alternativamente, limpiar el input directamente
+      await this.searchInput.click();
+      await this.searchInput.clear();
+      await this.searchInput.press('Escape');
+      await this.page.waitForTimeout(500);
+    }
+  }
+
+  /**
+   * Obtiene el número de filas visibles en la tabla de resultados
+   * @returns Número de filas en la tabla
+   */
+  async getTableRowCount(): Promise<number> {
+    // No esperar - si la tabla no está, devolver 0
+    try {
+      await this.dataTable.waitFor({ state: 'attached', timeout: 3000 });
+      
+      // Contar las filas del tbody (excluir header)
+      const rows = this.dataTable.locator('tbody tr.ant-table-row');
+      return await rows.count();
+    } catch {
+      // Si falla, devolver 0
+      return 0;
+    }
+  }
+
+  /**
+   * Verifica si la tabla contiene un cliente específico en los resultados
+   * @param clientName - Nombre del cliente a verificar
+   * @returns true si el cliente está en los resultados
+   */
+  async tableContainsClient(clientName: string): Promise<boolean> {
+    const clientCell = this.dataTable.locator(`td:has-text("${clientName}")`).first();
+    return await clientCell.isVisible({ timeout: 3000 }).catch(() => false);
+  }
+
+  /**
+   * Verifica si la tabla muestra el mensaje "No data"
+   * @returns true si no hay datos
+   */
+  async isTableEmpty(): Promise<boolean> {
+    const emptyMessage = this.page.locator('.ant-empty-description');
+    return await emptyMessage.isVisible({ timeout: 2000 }).catch(() => false);
   }
 }

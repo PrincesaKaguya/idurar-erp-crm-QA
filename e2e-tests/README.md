@@ -69,6 +69,7 @@ npm run test:cp037  # Validate tax value
 npm run test:cp038  # Delete customer
 npm run test:cp039  # Update customer
 npm run test:cp040  # Update invoice (skipped)
+npm run test:cp041  # Invoice search (skipped)
 
 # Debug mode (step through tests)
 npm run test:debug
@@ -101,7 +102,9 @@ e2e-tests/
 │   │   └── validate-value-range.spec.ts (CP037)
 │   └── invoice/       # Invoice module tests
 │       ├── update-invoice.spec.ts (CP040 - ⚠️ DISABLED)
-│       └── README-CP040.md
+│       ├── search-invoice.spec.ts (CP041 - ⚠️ DISABLED)
+│       ├── README-CP040.md
+│       └── README-CP041.md
 ├── test-data/         # Test data and auth state (gitignored)
 │   └── auth.json
 ├── playwright.config.ts
@@ -217,6 +220,28 @@ e2e-tests/
 
 **Page Object:** ✅ InvoicePage.ts fully implemented (20+ methods)
 
+#### CP041 - Invoice Search ⚠️ DISABLED
+**Objective:** Comprobar búsqueda de facturas por número, cliente y rango de fechas.
+
+**Test Cases:** 6 tests (IMPLEMENTED BUT DISABLED)
+- Functional search input field validation
+- API call validation when searching
+- Clear search functionality
+- Partial client name search
+- Search API parameters validation
+- Maintain input value during typing
+
+**Status:** ⚠️ Tests disabled due to technical limitation
+**Issue:** Same as CP040 - Invoice page fails to load completely (table virtualization)
+**Additional Limitation:** UI only supports client name search (NOT invoice number or date range)
+  - searchConfig: `{ entity: 'client', displayLabels: ['name'], searchFields: 'name' }`
+  - Invoice number search: NOT IMPLEMENTED in UI
+  - Date range search: NOT IMPLEMENTED in UI
+
+**Documentation:** [README-CP041.md](tests/invoice/README-CP041.md) - Full documentation with manual testing guide
+
+**Page Object:** ✅ InvoicePage.ts extended with 5 search methods
+
 ---
 
 ### Test Summary
@@ -232,8 +257,9 @@ e2e-tests/
 | Taxes    | CP036     | ✅     | -     | Delete tax |
 | Taxes    | CP037     | ✅     | -     | Validate value range |
 | Invoice  | CP040     | ⚠️     | 0/6   | Update invoice (disabled) |
+| Invoice  | CP041     | ⚠️     | 0/6   | Invoice search (disabled) |
 
-**Total:** 19+ passing tests, 6 disabled tests
+**Total:** 19+ passing tests, 12 disabled tests (Invoice module virtualization issue)
 
 ## 📝 Writing Tests
 
