@@ -18,7 +18,9 @@
     "test:cp038": "playwright test tests/customer/delete-customer.spec.ts",
     "test:cp039": "playwright test tests/customer/update-customer.spec.ts",
     "test:cp040": "playwright test tests/invoice/update-invoice.spec.ts",
-    "test:cp041": "playwright test tests/invoice/search-invoice.spec.ts",
+    "test:cp041": "playwright test tests/invoice/search-invoice.spec.ts --project=chromium",
+    "test:dashboard": "playwright test tests/dashboard --project=chromium",
+    "test:cp042": "playwright test tests/dashboard/summary-cards.spec.ts --project=chromium",
     "show-report": "playwright show-report",
     "codegen": "playwright codegen http://localhost:3000"
   },
