@@ -9,6 +9,8 @@
     "test:debug": "playwright test --debug",
     "test:customer": "playwright test tests/customer",
     "test:cp032": "playwright test tests/customer/search-unique-criteria.spec.ts",
+    "test:taxes": "playwright test tests/taxes",
+    "test:cp033": "playwright test tests/taxes/create-valid-tax.spec.ts",
     "show-report": "playwright show-report",
     "codegen": "playwright codegen http://localhost:3000"
   },
