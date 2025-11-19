@@ -296,8 +296,9 @@ export class TaxesPage {
    * @param rowIndex - 0-based row index
    */
   async openActionsMenu(rowIndex: number) {
-    const actionsButton = this.tableRows.nth(rowIndex).locator('.anticon-ellipsis');
-    await actionsButton.click();
+    const actionsButton = this.tableRows.nth(rowIndex).locator('.anticon-edit, .anticon-ellipsis');
+    await actionsButton.first().click();
+    await this.page.waitForTimeout(300);
   }
 
   /**
@@ -305,10 +306,101 @@ export class TaxesPage {
    * @param rowIndex - 0-based row index
    */
   async clickEdit(rowIndex: number) {
-    await this.openActionsMenu(rowIndex);
-    const editOption = this.page.getByRole('menuitem', { name: /edit/i });
-    await editOption.click();
+    // Cerrar drawer si está abierto
+    const drawerVisible = await this.page.locator('.ant-drawer.ant-drawer-open').isVisible().catch(() => false);
+    if (drawerVisible) {
+      await this.page.keyboard.press('Escape');
+      await this.page.waitForTimeout(500);
+    }
+
+    // Abrir el menú de acciones (3 puntos)
+    const actionsButton = this.tableRows.nth(rowIndex).locator('.ant-dropdown-trigger');
+    await actionsButton.click();
     await this.page.waitForTimeout(500);
+    
+    // Esperar a que aparezca el dropdown
+    await this.page.locator('.ant-dropdown:visible').waitFor({ state: 'visible', timeout: 3000 });
+    
+    // Click en la opción "Edit" del menú
+    const editOption = this.page.locator('.ant-dropdown:visible').getByText('Edit', { exact: true });
+    await editOption.click();
+    
+    // Esperar a que el drawer de edición se abra y sea visible
+    await this.page.locator('.ant-drawer.ant-drawer-open').waitFor({ state: 'visible', timeout: 5000 });
+    await this.page.waitForTimeout(800);
+  }
+
+  /**
+   * Update a tax with new data
+   * @param rowIndex - 0-based row index of the tax to edit
+   * @param newData - New tax data
+   */
+  async updateTax(rowIndex: number, newData: {
+    taxName?: string;
+    taxValue?: number;
+    enabled?: boolean;
+    isDefault?: boolean;
+  }) {
+    await this.clickEdit(rowIndex);
+    
+    // Wait for drawer to be fully visible
+    const drawer = this.page.locator('.ant-drawer.ant-drawer-open');
+    await drawer.waitFor({ state: 'visible' });
+    
+    // Use inputs within the visible drawer - usar .first() ya que hay 2 forms en el drawer
+    const taxNameInput = drawer.locator('input[id="taxName"]').first();
+    const taxValueInput = drawer.locator('input[id="taxValue"]').first();
+    
+    // Fill only the fields that are provided
+    if (newData.taxName !== undefined) {
+      await taxNameInput.clear();
+      await taxNameInput.fill(newData.taxName);
+    }
+    
+    if (newData.taxValue !== undefined) {
+      await taxValueInput.clear();
+      await taxValueInput.fill(newData.taxValue.toString());
+    }
+    
+    if (newData.enabled !== undefined) {
+      const enabledSwitch = drawer.locator('.ant-form-item')
+        .filter({ has: this.page.locator('input[id="enabled"]') })
+        .locator('button[role="switch"]').first();
+      const isEnabled = await enabledSwitch.getAttribute('aria-checked');
+      const currentlyEnabled = isEnabled === 'true';
+      if (currentlyEnabled !== newData.enabled) {
+        await enabledSwitch.click();
+      }
+    }
+    
+    if (newData.isDefault !== undefined) {
+      const isDefaultSwitch = drawer.locator('.ant-form-item')
+        .filter({ has: this.page.locator('input[id="isDefault"]') })
+        .locator('button[role="switch"]').first();
+      const isDefaultChecked = await isDefaultSwitch.getAttribute('aria-checked');
+      const currentlyDefault = isDefaultChecked === 'true';
+      if (currentlyDefault !== newData.isDefault) {
+        await isDefaultSwitch.click();
+      }
+    }
+    
+    // Save using update endpoint
+    const updatePromise = this.page.waitForResponse(response => 
+      response.url().includes('/api/taxes/update') && response.status() === 200
+    );
+    
+    // Find submit button in visible drawer - use first() para el form visible con datos
+    const submitButton = drawer.locator('button[type="submit"]').first();
+    await submitButton.waitFor({ state: 'visible', timeout: 3000 });
+    await submitButton.click();
+    await updatePromise;
+    
+    // Wait for drawer to close
+    await drawer.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
+    await this.page.waitForTimeout(500);
+    
+    // Wait for table to reload
+    await this.waitForTableToLoad();
   }
 
   /**
