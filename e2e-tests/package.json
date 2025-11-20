@@ -28,6 +28,8 @@
     "load:cp055-quick": "k6 run --vus 10 --duration 1m ../non-functional-tests/CP055-bulk-invoices/cp055-bulk-invoices.js",
     "perf:cp056": "playwright test tests/performance/cp056-table-rendering.spec.ts --project=chromium",
     "perf:cp056-all": "playwright test tests/performance/cp056-table-rendering.spec.ts",
+    "perf:cp057": "playwright test tests/performance/cp057-search-response-time.spec.ts --project=chromium",
+    "perf:cp057-all": "playwright test tests/performance/cp057-search-response-time.spec.ts",
     "show-report": "playwright show-report",
     "codegen": "playwright codegen http://localhost:3000"
   },
