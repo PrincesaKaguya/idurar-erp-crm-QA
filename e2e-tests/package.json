@@ -30,6 +30,12 @@
     "perf:cp056-all": "playwright test tests/performance/cp056-table-rendering.spec.ts",
     "perf:cp057": "playwright test tests/performance/cp057-search-response-time.spec.ts --project=chromium",
     "perf:cp057-all": "playwright test tests/performance/cp057-search-response-time.spec.ts",
+    "perf:cp058": "playwright test tests/performance/cp058-login-latency.spec.ts --project=chromium",
+    "perf:cp058-all": "playwright test tests/performance/cp058-login-latency.spec.ts",
+    "perf:cp059": "playwright test tests/performance/cp059-report-generation-time.spec.ts --project=chromium",
+    "perf:cp059-all": "playwright test tests/performance/cp059-report-generation-time.spec.ts",
+    "perf:cp060": "playwright test tests/performance/cp060-api-response-time.spec.ts --project=chromium",
+    "perf:cp060-all": "playwright test tests/performance/cp060-api-response-time.spec.ts",
     "show-report": "playwright show-report",
     "codegen": "playwright codegen http://localhost:3000"
   },
