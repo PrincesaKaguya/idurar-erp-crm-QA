@@ -1,0 +1,22 @@
+{
+  "name": "cp056-table-rendering-data-generator",
+  "version": "1.0.0",
+  "description": "Generador de datos de prueba para CP056 - Rendimiento de Tabla",
+  "main": "generate-test-data.js",
+  "scripts": {
+    "generate": "node generate-test-data.js 1000",
+    "generate:small": "node generate-test-data.js 500",
+    "generate:large": "node generate-test-data.js 1500"
+  },
+  "keywords": [
+    "test-data",
+    "performance",
+    "cp056",
+    "idurar"
+  ],
+  "author": "QA Team",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.6.0"
+  }
+}

@@ -1,12 +1,38 @@
 # IDURAR ERP/CRM - E2E Test Suite
 
-Automated End-to-End testing suite for IDURAR ERP/CRM using Playwright and TypeScript.
+Automated End-to-End testing suite for IDURAR ERP/CRM using **Playwright** (functional tests) and **k6** (performance/load tests).
+
+## 📦 Test Types
+
+### ✅ Functional Tests (Playwright + TypeScript)
+- Customer management (search, create, update, delete)
+- Tax management (CRUD operations)
+- Invoice management (limited by virtualization)
+- Dashboard validation
+- Quote creation
+
+### 🚀 Non-Functional Tests (k6 + JavaScript)
+- **Performance Testing**: Response time under load
+- **Load Testing**: 40-50 concurrent users
+- **Reliability**: Error rate and stability
+- **Scalability**: Capacity evaluation
+
+---
 
 ## 📋 Prerequisites
 
+### For Functional Tests (Playwright)
 - Node.js 20.x or higher
 - npm 10.x or higher
 - IDURAR ERP/CRM application running locally or accessible via URL
+
+### For Performance Tests (k6)
+- k6 installed (https://k6.io/docs/get-started/installation/)
+- Windows: `choco install k6`
+- Linux: `sudo apt-get install k6`
+- macOS: `brew install k6`
+
+---
 
 ## 🚀 Quick Start
 
@@ -69,7 +95,15 @@ npm run test:cp037  # Validate tax value
 npm run test:cp038  # Delete customer
 npm run test:cp039  # Update customer
 npm run test:cp040  # Update invoice (skipped)
-npm run test:cp041  # Invoice search (skipped)
+npm run test:cp041  # Invoice search (chromium only)
+npm run test:cp042  # Dashboard summary cards (chromium only)
+npm run test:cp044  # Create quote (chromium only)
+
+# Run performance/load tests (requires k6)
+npm run load:cp054       # CP054: 40-50 concurrent users (~5 min)
+npm run load:cp054-quick # CP054: Quick test (10 users, 1 min)
+
+**Nota**: Los scripts de k6 se encuentran en `../non-functional-tests/CP054-load-test/`
 
 # Debug mode (step through tests)
 npm run test:debug
@@ -100,16 +134,24 @@ e2e-tests/
 │   │   ├── validate-required-name.spec.ts (CP035)
 │   │   ├── delete-tax.spec.ts (CP036)
 │   │   └── validate-value-range.spec.ts (CP037)
-│   └── invoice/       # Invoice module tests
-│       ├── update-invoice.spec.ts (CP040 - ⚠️ DISABLED)
-│       ├── search-invoice.spec.ts (CP041 - ⚠️ DISABLED)
-│       ├── README-CP040.md
-│       └── README-CP041.md
+│   ├── invoice/       # Invoice module tests
+│   │   ├── update-invoice.spec.ts (CP040 - ⚠️ DISABLED)
+│   │   ├── search-invoice.spec.ts (CP041 - ⚠️ DISABLED)
+│   │   ├── README-CP040.md
+│   │   └── README-CP041.md
+│   ├── dashboard/     # Dashboard module tests
+│   │   ├── summary-cards.spec.ts (CP042)
+│   │   └── README-CP042.md
+│   └── quote/         # Quote module tests
+│       ├── create-quote.spec.ts (CP044)
+│       └── README-CP044.md
 ├── test-data/         # Test data and auth state (gitignored)
 │   └── auth.json
 ├── playwright.config.ts
 ├── tsconfig.json
 └── package.json
+
+**Nota**: Las pruebas no funcionales (performance, carga) se encuentran en: `../non-functional-tests/`
 ```
 
 ## 🧪 Test Suites
@@ -244,22 +286,116 @@ e2e-tests/
 
 ---
 
+### Dashboard Module
+
+#### CP042 - Dashboard Summary Cards ✅
+**Objective:** Validate that dashboard summary cards (Invoices, Quotes, Paid, Unpaid) display correctly.
+
+**Test Cases:** 3 tests
+- Display all 4 summary cards with valid data
+- Display correct titles and prefixes
+- Display amounts with valid currency format
+
+**Status:** ✅ All tests passing (4/4)
+**Browser:** Chromium only (optimized for speed)
+
+**Documentation:** [README-CP042.md](tests/dashboard/README-CP042.md)
+
+**Page Object:** ✅ DashboardPage.ts extended with 9 new methods
+
+### Quote Module
+
+#### CP044 - Create Quote ✅
+**Objective:** Verify that users can create quotes with valid data.
+
+**Test Cases:** 1 test
+- Create quote with minimum required data (client, items, tax)
+
+**Status:** ✅ Test passing (2/2)
+**Browser:** Chromium only
+
+**Documentation:** [README-CP044.md](tests/quote/README-CP044.md)
+
+**Page Object:** ✅ QuotePage.ts created with helper methods
+
+---
+
+### Performance Tests (Non-Functional)
+
+#### CP054 - Load Test: 40-50 Concurrent Users 🚀
+**Type:** Non-Functional - Performance/Load Testing  
+**Tool:** k6 (https://k6.io/)
+
+**Objective:** Evaluate system behavior under load of 40-50 concurrent users performing queries and records.
+
+**Attributes Evaluated:**
+- **Performance**: Response time under load
+- **Reliability**: Error rate and stability
+- **Compatibility**: Concurrency handling
+- **Scalability**: Capacity to serve multiple users
+
+**Load Profile:**
+1. Ramp-up: 0 → 10 users (30s)
+2. Medium load: 20 users (1m)
+3. Target load: 40 users (2m) ⭐
+4. Overload: 50 users (1m)
+5. Ramp-down: 50 → 0 users (30s)
+
+**Operations Simulated:**
+- 70% Queries: List customers, invoices, quotes, dashboard
+- 30% Records: Create customers
+
+**Success Thresholds:**
+- ✓ p95 response time < 2000ms
+- ✓ Error rate < 5%
+- ✓ HTTP failures < 5%
+
+**Status:** ✅ Implemented (requires k6 installation)
+**Duration:** ~5 minutes
+**Expected Result:** System handles 40-50 concurrent users successfully
+
+**Documentation:** 
+- [performance/README.md](performance/README.md) - Overview
+- [performance/README-CP054.md](performance/README-CP054.md) - Technical documentation
+- [performance/SETUP-CP054.md](performance/SETUP-CP054.md) - Installation & troubleshooting
+- [performance/EXECUTIVE-SUMMARY-CP054.md](performance/EXECUTIVE-SUMMARY-CP054.md) - Executive summary
+
+**Execution:**
+```bash
+# Install k6 first (Windows)
+choco install k6
+
+# Run full test (~5 min)
+npm run load:cp054
+
+# Run quick test (1 min)
+npm run load:cp054-quick
+```
+
+---
+
 ### Test Summary
 
-| Module   | Test Case | Status | Tests | Notes |
-|----------|-----------|--------|-------|-------|
-| Customer | CP032     | ✅     | 8/8   | Search functionality |
-| Customer | CP038     | ✅     | 5/5   | Delete customer |
-| Customer | CP039     | ✅     | 6/6   | Update customer (simplified) |
-| Taxes    | CP033     | ✅     | -     | Create tax |
-| Taxes    | CP034     | ✅     | -     | Edit tax |
-| Taxes    | CP035     | ✅     | -     | Validate name required |
-| Taxes    | CP036     | ✅     | -     | Delete tax |
-| Taxes    | CP037     | ✅     | -     | Validate value range |
-| Invoice  | CP040     | ⚠️     | 0/6   | Update invoice (disabled) |
-| Invoice  | CP041     | ⚠️     | 0/6   | Invoice search (disabled) |
+| Module   | Test Case | Type | Status | Tests | Notes |
+|----------|-----------|------|--------|-------|-------|
+| Customer | CP032     | Functional | ✅     | 8/8   | Search functionality |
+| Customer | CP038     | Functional | ✅     | 5/5   | Delete customer |
+| Customer | CP039     | Functional | ✅     | 6/6   | Update customer (simplified) |
+| Taxes    | CP033     | Functional | ✅     | -     | Create tax |
+| Taxes    | CP034     | Functional | ✅     | -     | Edit tax |
+| Taxes    | CP035     | Functional | ✅     | -     | Validate name required |
+| Taxes    | CP036     | Functional | ✅     | -     | Delete tax |
+| Taxes    | CP037     | Functional | ✅     | -     | Validate value range |
+| Invoice  | CP040     | Functional | ⚠️     | 0/6   | Update invoice (disabled) |
+| Invoice  | CP041     | Functional | ⚠️     | 0/6   | Invoice search (disabled) |
+| Dashboard| CP042     | Functional | ✅     | 4/4   | Summary cards (Chromium) |
+| Quote    | CP044     | Functional | ✅     | 2/2   | Create quote (Chromium) |
+| **Performance** | **CP054** | **Non-Functional** | ✅ | **Load test** | **40-50 users (k6)** |
 
-**Total:** 19+ passing tests, 12 disabled tests (Invoice module virtualization issue)
+**Total Functional:** 25+ passing tests, 12 disabled tests (Invoice module virtualization issue)  
+**Total Non-Functional:** 1 load test (requires k6)
+
+---
 
 ## 📝 Writing Tests
 
@@ -422,7 +558,27 @@ jobs:
 
 - [Playwright Documentation](https://playwright.dev)
 - [Playwright Best Practices](https://playwright.dev/docs/best-practices)
+- [k6 Documentation](https://k6.io/docs/)
+- [k6 Load Testing Guide](https://k6.io/docs/test-types/load-testing/)
 - [IDURAR Documentation](https://github.com/idurar/idurar-erp-crm)
+
+---
+
+## 🎯 Test Coverage Summary
+
+### Functional Tests
+- ✅ **Customer Module**: 19 tests (CP032, CP038, CP039)
+- ✅ **Taxes Module**: 5 test cases (CP033-CP037)
+- ✅ **Dashboard Module**: 4 tests (CP042)
+- ✅ **Quote Module**: 2 tests (CP044)
+- ⚠️ **Invoice Module**: 12 tests disabled (virtualization issue)
+
+### Non-Functional Tests
+- ✅ **Performance/Load**: CP054 (40-50 concurrent users, ~5 min)
+
+**Total**: 30+ functional tests + 1 comprehensive load test
+
+---
 
 ## 📄 License
 
